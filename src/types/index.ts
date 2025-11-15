@@ -182,3 +182,13 @@ export interface GitHubContributor {
     c: number;
   }>;
 }
+
+// Template types
+export type TemplateId = 'default' | 'modern';
+
+export interface TemplateConfig {
+  id: TemplateId;
+  name: string;
+  description: string;
+  preview: string;
+}

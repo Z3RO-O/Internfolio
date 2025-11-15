@@ -2,16 +2,20 @@
 
 import React, { useEffect, useState } from 'react';
 import { use } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/store/auth';
 import { FormData } from '@/types';
 import PublicPortfolioView from '@/components/portfolio/PublicPortfolioView';
+import { DEFAULT_TEMPLATE } from '@/config/templates';
 
 type ParamsType = Promise<{ id: string }>;
 
 export default function PublicPortfolioPage({ params }: { params: ParamsType }) {
   const { id: portfolioId } = use(params);
+  const searchParams = useSearchParams();
 
   const [portfolioData, setPortfolioData] = useState<FormData | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(DEFAULT_TEMPLATE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +24,7 @@ export default function PublicPortfolioPage({ params }: { params: ParamsType }) 
       try {
         const { data: portfolioDataArray, error: portfolioError } = await supabase
           .from('user_portfolios')
-          .select('user_id, is_published')
+          .select('user_id, is_published, selected_template')
           .eq('portfolio_id', portfolioId);
 
         if (portfolioError) throw portfolioError;
@@ -34,6 +38,11 @@ export default function PublicPortfolioPage({ params }: { params: ParamsType }) 
         if (!portfolioData.is_published) {
           throw new Error('This portfolio is not currently published');
         }
+
+        // Get template from URL parameter, fallback to stored template, then default
+        const urlTemplate = searchParams.get('template');
+        const templateToUse = urlTemplate || portfolioData.selected_template || DEFAULT_TEMPLATE;
+        setSelectedTemplate(templateToUse);
 
         const { data: formDataArray, error: formError } = await supabase
           .from('intern_forms')
@@ -56,7 +65,7 @@ export default function PublicPortfolioPage({ params }: { params: ParamsType }) 
     }
 
     fetchPortfolio();
-  }, [portfolioId]);
+  }, [portfolioId, searchParams]);
 
   if (loading) {
     return (
@@ -76,5 +85,5 @@ export default function PublicPortfolioPage({ params }: { params: ParamsType }) 
     );
   }
 
-  return <PublicPortfolioView data={portfolioData} />;
+  return <PublicPortfolioView data={portfolioData} templateId={selectedTemplate} />;
 }

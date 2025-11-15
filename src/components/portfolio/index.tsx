@@ -5,16 +5,19 @@ import PortfolioStats from './stats';
 import Projects from './projects';
 import useFormStore from '@/store/useFormStore';
 import LearningGrowth from './learning-growth';
+import TemplateSelector from '@/components/template/TemplateSelector';
+import { TemplateId } from '@/types';
 
 const Portfolio = () => {
   const { formData, isPublished, publishedUrl, publishPortfolio, unpublishPortfolio } =
     useFormStore();
   const [publishing, setPublishing] = useState(false);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
-  const handlePublish = async () => {
+  const handlePublish = async (templateId: TemplateId) => {
     setPublishing(true);
     try {
-      await publishPortfolio();
+      await publishPortfolio(templateId);
     } catch (error) {
       console.error('Failed to publish portfolio:', error);
     } finally {
@@ -41,8 +44,7 @@ const Portfolio = () => {
         </div>
         <Link
           href="/contact"
-          className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full border border-gray-200 font-medium transition-all duration-200 hover:bg-gray-50 no-underline"
-        >
+          className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full border border-gray-200 font-medium transition-all duration-200 hover:bg-gray-50 no-underline">
           Get your
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -52,8 +54,7 @@ const Portfolio = () => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="w-5 h-5"
-          >
+            className="w-5 h-5">
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </Link>
@@ -77,8 +78,7 @@ const Portfolio = () => {
                 />
                 <button
                   onClick={() => navigator.clipboard.writeText(publishedUrl || '')}
-                  className="absolute right-1 top-1 bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded transition-colors duration-200 text-sm font-medium"
-                >
+                  className="absolute right-1 top-1 bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded transition-colors duration-200 text-sm font-medium">
                   Copy Link
                 </button>
               </div>
@@ -87,29 +87,25 @@ const Portfolio = () => {
               <button
                 onClick={handleUnpublish}
                 disabled={publishing}
-                className="bg-red-100 hover:bg-red-200 px-6 py-3 rounded-full transition-colors duration-200 flex items-center gap-2 font-medium disabled:opacity-70 cursor-pointer"
-              >
+                className="bg-red-100 hover:bg-red-200 px-6 py-3 rounded-full transition-colors duration-200 flex items-center gap-2 font-medium disabled:opacity-70 cursor-pointer">
                 {publishing ? (
                   <>
                     <svg
                       className="animate-spin h-5 w-5 text-white"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
-                      viewBox="0 0 24 24"
-                    >
+                      viewBox="0 0 24 24">
                       <circle
                         className="opacity-25"
                         cx="12"
                         cy="12"
                         r="10"
                         stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
+                        strokeWidth="4"></circle>
                       <path
                         className="opacity-75"
                         fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Processing...
                   </>
@@ -120,8 +116,7 @@ const Portfolio = () => {
                       className="h-5 w-5"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
+                      stroke="currentColor">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -138,53 +133,23 @@ const Portfolio = () => {
         ) : (
           <div className="flex justify-center">
             <button
-              onClick={handlePublish}
+              onClick={() => setShowTemplateSelector(true)}
               disabled={publishing}
-              className="bg-green-100 hover:bg-green-200 px-6 py-3 rounded-full transition-colors duration-200 flex items-center gap-2 font-medium disabled:opacity-70"
-            >
-              {publishing ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Publishing...
-                </>
-              ) : (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7l4-4m0 0l4 4m-4-4v18"
-                    />
-                  </svg>
-                  Publish Portfolio
-                </>
-              )}
+              className="bg-green-100 hover:bg-green-200 px-6 py-3 rounded-full transition-colors duration-200 flex items-center gap-2 font-medium disabled:opacity-70">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7l4-4m0 0l4 4m-4-4v18"
+                />
+              </svg>
+              Publish Portfolio
             </button>
           </div>
         )}
@@ -199,15 +164,13 @@ const Portfolio = () => {
       <div className="flex justify-center mb-16">
         <Link
           href="/form"
-          className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 px-6 py-3 rounded-full transition-colors duration-200 font-medium no-underline"
-        >
+          className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 px-6 py-3 rounded-full transition-colors duration-200 font-medium no-underline">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+            stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -218,6 +181,14 @@ const Portfolio = () => {
           Back to Edit Portfolio
         </Link>
       </div>
+
+      {/* Template Selector Modal */}
+      <TemplateSelector
+        open={showTemplateSelector}
+        onOpenChange={setShowTemplateSelector}
+        onSelectTemplate={handlePublish}
+        formData={formData}
+      />
     </div>
   );
 };

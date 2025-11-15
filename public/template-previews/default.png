@@ -1,0 +1,23 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect width="800" height="80" fill="#ffffff"/>
+  <text x="40" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1e293b">Internfolio</text>
+  
+  <!-- Hero Section -->
+  <rect x="40" y="120" width="720" height="120" rx="8" fill="#ffffff"/>
+  <text x="400" y="160" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#334155" text-anchor="middle">Classic Professional</text>
+  <text x="400" y="190" font-family="Arial, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Clean layout • Traditional style • Professional</text>
+  
+  <!-- Content Sections -->
+  <rect x="40" y="260" width="345" height="120" rx="8" fill="#ffffff"/>
+  <rect x="415" y="260" width="345" height="120" rx="8" fill="#ffffff"/>
+  
+  <rect x="40" y="400" width="720" height="120" rx="8" fill="#ffffff"/>
+  
+  <!-- Footer -->
+  <text x="400" y="560" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Default Template</text>
+</svg>
+
+

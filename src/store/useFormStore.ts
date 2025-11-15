@@ -1,8 +1,17 @@
-import { BasicInfo, TechStack, Learning, Project, PullRequest, FormData } from '@/types';
+import {
+  BasicInfo,
+  TechStack,
+  Learning,
+  Project,
+  PullRequest,
+  FormData,
+  TemplateId
+} from '@/types';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '@/store/auth';
 import useAuthStore from '@/store/auth';
+import { DEFAULT_TEMPLATE } from '@/config/templates';
 
 interface FormState {
   currentStep: number;
@@ -14,6 +23,7 @@ interface FormState {
   saveError: string | null;
   isPublished: boolean;
   publishedUrl: string | null;
+  selectedTemplate: TemplateId;
   // Actions
   nextStep: () => void;
   prevStep: () => void;
@@ -31,8 +41,9 @@ interface FormState {
   removePR: (projectIndex: number, prIndex: number) => void;
   saveToSupabase: () => Promise<void>;
   loadFromSupabase: () => Promise<void>;
-  publishPortfolio: () => Promise<string>;
+  publishPortfolio: (templateId?: TemplateId) => Promise<string>;
   unpublishPortfolio: () => Promise<void>;
+  changeTemplate: (templateId: TemplateId) => Promise<void>;
   ensureFormDataLoaded: () => Promise<void>;
 }
 
@@ -48,6 +59,7 @@ const useFormStore = create<FormState>()(
       saveError: null,
       isPublished: false,
       publishedUrl: null,
+      selectedTemplate: DEFAULT_TEMPLATE,
 
       formData: {
         basicInfo: {
@@ -364,10 +376,10 @@ const useFormStore = create<FormState>()(
             throw error;
           }
 
-          // Get portfolio ID and published status
+          // Get portfolio ID, published status, and selected template
           const { data: portfolioData, error: portfolioError } = await supabase
             .from('user_portfolios')
-            .select('portfolio_id, is_published')
+            .select('portfolio_id, is_published, selected_template')
             .eq('user_id', user.id)
             .single();
 
@@ -383,6 +395,8 @@ const useFormStore = create<FormState>()(
                 portfolioData?.is_published && portfolioData?.portfolio_id
                   ? `${window.location.origin}/p/${portfolioData.portfolio_id}`
                   : null,
+              selectedTemplate:
+                (portfolioData?.selected_template as TemplateId) || DEFAULT_TEMPLATE,
               saveStatus: 'success'
             });
           }
@@ -396,7 +410,7 @@ const useFormStore = create<FormState>()(
         }
       },
 
-      publishPortfolio: async () => {
+      publishPortfolio: async (templateId?: TemplateId) => {
         const { user } = useAuthStore.getState();
 
         if (!user) {
@@ -405,6 +419,9 @@ const useFormStore = create<FormState>()(
 
         try {
           set({ saveStatus: 'saving' });
+
+          // Use provided template or current selected template
+          const templateToUse = templateId || get().selectedTemplate;
 
           // First save the current form data
           await get().saveToSupabase();
@@ -423,13 +440,13 @@ const useFormStore = create<FormState>()(
             throw new Error('Failed to generate portfolio ID');
           }
 
-          // We'll skip updating the intern_forms table since it doesn't have an is_published column
-          // Instead, we'll just update the user_portfolios table
-
-          // Make sure user_portfolios is updated with is_published=true
+          // Update user_portfolios with is_published=true and selected_template
           const { error: portfolioError } = await supabase
             .from('user_portfolios')
-            .update({ is_published: true })
+            .update({
+              is_published: true,
+              selected_template: templateToUse
+            })
             .eq('user_id', user.id);
 
           if (portfolioError) throw portfolioError;
@@ -438,6 +455,7 @@ const useFormStore = create<FormState>()(
           set({
             isPublished: true,
             publishedUrl,
+            selectedTemplate: templateToUse,
             saveStatus: 'success'
           });
 
@@ -483,6 +501,39 @@ const useFormStore = create<FormState>()(
           set({
             saveStatus: 'error',
             saveError: err.message || 'Failed to unpublish portfolio'
+          });
+          throw err;
+        }
+      },
+
+      changeTemplate: async (templateId: TemplateId) => {
+        const { user } = useAuthStore.getState();
+
+        if (!user) {
+          throw new Error('User must be authenticated to change template');
+        }
+
+        try {
+          set({ saveStatus: 'saving' });
+
+          // Update the selected template in the database
+          const { error } = await supabase
+            .from('user_portfolios')
+            .update({ selected_template: templateId })
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+
+          set({
+            selectedTemplate: templateId,
+            saveStatus: 'success'
+          });
+        } catch (error: unknown) {
+          const err = error as Error;
+          console.error('Error changing template:', err);
+          set({
+            saveStatus: 'error',
+            saveError: err.message || 'Failed to change template'
           });
           throw err;
         }

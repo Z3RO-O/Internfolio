@@ -1,92 +1,25 @@
 'use client';
 import React from 'react';
 import { FormData } from '@/types';
-import BasicInfo from './basic-info';
-import PortfolioStats from './stats';
-import Projects from './projects';
-import LearningGrowth from './learning-growth';
-import Link from 'next/link';
-import PDFExportButton from '../internship-report/button';
-import { trackEvent } from '@/lib/mixpanel';
+import { TemplateRenderer } from '@/utils/templateRenderer';
+import TemplateSwitcher from '@/components/template/TemplateSwitcher';
+import { DEFAULT_TEMPLATE } from '@/config/templates';
 
 interface PublicPortfolioViewProps {
   data: FormData;
+  templateId?: string;
 }
 
-export default function PublicPortfolioView({ data }: PublicPortfolioViewProps) {
+export default function PublicPortfolioView({ data, templateId }: PublicPortfolioViewProps) {
+  const currentTemplate = templateId || DEFAULT_TEMPLATE;
+
   return (
-    <div className="w-full min-h-screen font-inter">
-      <nav className="flex justify-between items-center px-4 py-4 md:px-8 md:py-6">
-        <div className="md:text-3xl text-[25px] font-medium">
-          Intern<span className="font-bold">folio</span>
-        </div>
-        <div className="flex space-x-1.5 md:space-x-3">
-          <PDFExportButton data={data} />
-          <Link
-            href="/"
-            onClick={() =>
-              trackEvent('get_your_clicked', {
-                category: 'Portfolio Button',
-                label: 'get_your_clicked'
-              })
-            }
-            className="flex items-center gap-1 md:gap-2 bg-white text-black md:px-6 px-4 py-1 md:py-3 rounded-full border border-gray-200 font-medium transition-all duration-200 hover:bg-gray-50 no-underline"
-          >
-            Get your
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-5 h-5"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-      </nav>
+    <>
+      {/* Template Switcher */}
+      <TemplateSwitcher currentTemplate={currentTemplate} />
 
-      <BasicInfo basicInfo={data.basicInfo} />
-      <PortfolioStats projects={data.projects} techStack={data.techStack} />
-      <Projects projects={data.projects} />
-      <LearningGrowth learning={data.learning} />
-      <div className="flex flex-col gap-4 justify-between items-center px-4 py-4 md:px-8 md:py-6">
-        <div className="md:text-3xl text-[25px] font-medium">
-          Created with Intern<span className="font-bold">folio</span>
-        </div>
-        <div className="flex space-x-1.5 md:space-x-3">
-          <PDFExportButton place={'footer'} data={data} />
-          <Link
-            href="/"
-            onClick={() => {
-              console.log('Button clicked!');
-
-              trackEvent('create_new_clicked', {
-                category: 'Portfolio Button',
-                label: 'create_new_clicked'
-              });
-            }}
-            className="flex items-center gap-1 md:gap-2 bg-white text-black md:px-6 px-4 py-1 md:py-3 rounded-full border border-gray-200 font-medium transition-all duration-200 hover:bg-gray-50 no-underline"
-          >
-            Create New
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-5 h-5"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-      </div>
-    </div>
+      {/* Render selected template */}
+      <TemplateRenderer templateId={currentTemplate} data={data} />
+    </>
   );
 }
